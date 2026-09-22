@@ -25,6 +25,14 @@
 .PARAMETER BranchName
     The branch to protect. Default is "main".
 
+.PARAMETER ForceCodeScanningRule
+    Add the CodeQL "code_scanning" rule even when the branch has no CodeQL analysis yet. By default the
+    rule is added only when at least one CodeQL analysis exists for the branch: a code_scanning rule
+    with no analysis behind it blocks every pull request with "Waiting for Code Scanning results".
+    codeql.yaml analyses the workflow files ('actions' language) on every repository, so the first
+    push to the branch after the repository is created produces that analysis; on a brand-new
+    repository run this script after that first CodeQL run (or re-run it with just this rule to add).
+
 .PARAMETER RequireLinearHistory
     Also add the "required_linear_history" rule and restrict merges to squash and rebase (no merge
     commits). Satisfies baseline item 9. Stacked PRs then need scripts/restack.ps1 after each merge —
@@ -58,7 +66,10 @@ param(
     [string]$BranchName = "main",
 
     [Parameter()]
-    [switch]$RequireLinearHistory
+    [switch]$RequireLinearHistory,
+
+    [Parameter()]
+    [switch]$ForceCodeScanningRule
 )
 
 # Check if gh CLI is installed
@@ -105,6 +116,26 @@ if ($Repository -eq "Chris-Wolfgang/Conflict.Modern" -or -not $Repository) {
 
 Write-Host "`n🛡️  Setting up branch protection ruleset for: $Repository" -ForegroundColor Cyan
 Write-Host "📌 Protected branch: $BranchName`n" -ForegroundColor Cyan
+
+# The CodeQL code_scanning rule needs at least one CodeQL analysis on the branch or it blocks
+# every PR. codeql.yaml's 'actions' leg analyses every repository (C# or not), so the analysis
+# exists once the workflow has run on the branch - check for it rather than guessing from the tree.
+$addCodeScanningRule = $ForceCodeScanningRule.IsPresent
+if (-not $addCodeScanningRule) {
+    Write-Host "🔍 Checking $BranchName for a CodeQL analysis (code_scanning rule)..." -ForegroundColor Yellow
+    $analyses = gh api "/repos/$Repository/code-scanning/analyses?ref=refs/heads/$BranchName&tool_name=CodeQL&per_page=1" --jq 'length' 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        # 404 = code scanning not enabled / no analyses yet; anything else is worth seeing.
+        Write-Host "ℹ️  Could not list CodeQL analyses for $BranchName (code scanning not enabled yet?)" -ForegroundColor Yellow
+        $analyses = 0
+    }
+    $addCodeScanningRule = ([int]"$analyses" -gt 0)
+    if ($addCodeScanningRule) {
+        Write-Host "✅ CodeQL analysis found on $BranchName - the code_scanning rule will be added" -ForegroundColor Green
+    } else {
+        Write-Host "ℹ️  No CodeQL analysis on $BranchName yet - skipping the code_scanning rule (it would block every PR with 'Waiting for Code Scanning results'). Let codeql.yaml run once on $BranchName, then add the rule in Settings > Rules, or re-run with -ForceCodeScanningRule." -ForegroundColor Yellow
+    }
+}
 
 # Check if ruleset already exists
 Write-Host "🔍 Checking for existing rulesets..." -ForegroundColor Yellow
@@ -215,6 +246,7 @@ $rulesetConfig = @{
                 # and doesn't run for a PR, GitHub will treat the required check as missing and
                 # block the merge. All required status checks must run on every PR.
                 required_status_checks = @(
+                    @{ context = "Protected Files Guard" },
                     @{ context = "Detect .NET Projects" },
                     @{ context = "Stage 1: Linux Tests (.NET 5.0-10.0) + Coverage Gate" },
                     @{ context = "Stage 2: Windows Tests (.NET 5.0-10.0, Framework 4.6.2-4.8.1)" },
@@ -238,9 +270,10 @@ $rulesetConfig = @{
         # The CodeQL alerts-dashboard gate. Only blocks merges when the alerts
         # threshold is exceeded; the underlying CodeQL workflow already runs as
         # a required status check above, so this is the second-tier "results"
-        # gate. Activate it only AFTER the CodeQL workflow has completed at
-        # least one successful run — without prior analyses it blocks all PRs.
-        @{
+        # gate. Without at least one CodeQL analysis on the branch it blocks
+        # every PR ("Waiting for Code Scanning results") - hence the
+        # $addCodeScanningRule check above (override with -ForceCodeScanningRule).
+        $(if ($addCodeScanningRule) { @{
             type = "code_scanning"
             parameters = @{
                 code_scanning_tools = @(
@@ -251,7 +284,7 @@ $rulesetConfig = @{
                     }
                 )
             }
-        },
+        } }),
         # Auto-request a Copilot review on every PR, including drafts and on
         # subsequent pushes. The rulesets API now supports this rule type
         # (earlier versions of this script left the toggle to the UI).
@@ -304,6 +337,7 @@ try {
             Write-Host "   ✅ No approvals required (single-developer mode)" -ForegroundColor Gray
         }
         Write-Host "   ✅ Required status checks (must pass before merging):" -ForegroundColor Gray
+        Write-Host "      - Protected Files Guard" -ForegroundColor DarkGray
         Write-Host "      - Detect .NET Projects" -ForegroundColor DarkGray
         Write-Host "      - Stage 1: Linux Tests (.NET 5.0-10.0) + Coverage Gate" -ForegroundColor DarkGray
         Write-Host "      - Stage 2: Windows Tests (.NET 5.0-10.0, Framework 4.6.2-4.8.1)" -ForegroundColor DarkGray
@@ -316,7 +350,11 @@ try {
         Write-Host "   ✅ Stale reviews dismissed when new commits are pushed" -ForegroundColor Gray
         Write-Host "   ✅ Force pushes blocked on $BranchName branch" -ForegroundColor Gray
         Write-Host "   ✅ Branch deletion prevented for $BranchName" -ForegroundColor Gray
-        Write-Host "   ✅ Code scanning: CodeQL alerts gate (errors / high+)" -ForegroundColor Gray
+        if ($addCodeScanningRule) {
+            Write-Host "   ✅ Code scanning: CodeQL alerts gate (errors / high+)" -ForegroundColor Gray
+        } else {
+            Write-Host "   ⏭️  Code scanning: CodeQL alerts gate NOT added (no CodeQL analysis on $BranchName yet)" -ForegroundColor Yellow
+        }
         Write-Host "   ✅ Copilot code review: auto-requested on every PR (incl. drafts, on push)" -ForegroundColor Gray
         Write-Host "   ✅ Code quality gate: blocks on analyzer / formatter errors" -ForegroundColor Gray
         Write-Host "   ✅ No bypass allowed - all users must follow these rules" -ForegroundColor Gray

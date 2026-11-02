@@ -21,7 +21,7 @@ This issue is the living **improvement menu** for this repo. It is intentionally
 - Validate performance gains via benchmark deltas
 
 ### Testing (`maintenance - testing`)
-- Achieve / maintain code coverage ≥ 90 %
+- Achieve / maintain line coverage ≥ 95 % on production code and 100 % on test assemblies
 - Add integration test suite
 - Add mutation tests (Stryker)
 - Refactor test fixtures

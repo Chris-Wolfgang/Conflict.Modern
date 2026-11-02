@@ -1,1 +1,5 @@
 semgrep
+# semgrep pins mcp==1.29.0 exactly; 1.30.0 fixes GHSA-84m7-p3x7-pcfv. The override file makes
+# this resolvable. Compile with:
+#   uv pip compile --universal --generate-hashes semgrep.in --override semgrep.overrides.txt -o semgrep.txt
+mcp>=1.30.0

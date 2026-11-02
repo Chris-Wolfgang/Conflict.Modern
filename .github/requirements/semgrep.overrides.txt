@@ -1,0 +1,12 @@
+# Overrides for `uv pip compile` (semgrep.txt). An override REPLACES a package's requirement
+# wherever it appears, including inside another package's metadata.
+#
+# semgrep (1.180.0 and 1.181.0, the latest as of 2026-10) declares `mcp==1.29.0` exactly. mcp
+# 1.29.0 is vulnerable to GHSA-84m7-p3x7-pcfv (unbounded session accumulation in the
+# StreamableHTTP transport, fixed in 1.30.0), so the hash-pinned tree cannot be resolved
+# normally. The install is `pip install --no-deps --require-hashes`, so pip never checks
+# semgrep's declared pin; the override only decides what the lock file records.
+#
+# Remove this file, the `mcp` line in semgrep.in and the --override flag once a semgrep
+# release requires mcp >= 1.30.0.
+mcp==1.30.0

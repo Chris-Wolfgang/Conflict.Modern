@@ -229,12 +229,12 @@ jobs:
           # report. The README badge reads it from
           # <docs site>/versions/latest/coverage/badge.json, so it updates on
           # every release with no gist, PAT or third-party service. Colour
-          # steps follow the CI gate: >= 90 is the src/ threshold.
+          # steps follow the CI gate: >= 95 is the src/ threshold.
           $summary = Get-Content (Join-Path $outDir 'Summary.txt') -Raw
           $m = [regex]::Match($summary, 'Line coverage:\s*([0-9]+(?:\.[0-9]+)?)%')
           if ($m.Success) {
             $pct = [double]$m.Groups[1].Value
-            $color = if ($pct -ge 90) { 'brightgreen' } elseif ($pct -ge 80) { 'green' } elseif ($pct -ge 70) { 'yellow' } else { 'red' }
+            $color = if ($pct -ge 95) { 'brightgreen' } elseif ($pct -ge 90) { 'green' } elseif ($pct -ge 80) { 'yellowgreen' } elseif ($pct -ge 70) { 'yellow' } else { 'red' }
             $badge = [ordered]@{ schemaVersion = 1; label = 'coverage'; message = "$($m.Groups[1].Value)%"; color = $color }
             $badge | ConvertTo-Json -Compress | Set-Content -Path (Join-Path $outDir 'badge.json') -Encoding utf8NoBOM -NoNewline
             Write-Host "Coverage badge: $($m.Groups[1].Value)% ($color)"

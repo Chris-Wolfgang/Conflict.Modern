@@ -1,0 +1,22 @@
+# Overrides for `uv pip compile` (semgrep.txt). An override REPLACES a package's requirement
+# wherever it appears, including inside another package's metadata.
+#
+# semgrep (1.180.0 and 1.181.0, the latest as of 2026-10) declares `mcp==1.29.0` exactly. mcp
+# 1.29.0 is vulnerable to GHSA-84m7-p3x7-pcfv (unbounded session accumulation in the
+# StreamableHTTP transport, fixed in 1.30.0), so the hash-pinned tree cannot be resolved
+# normally. The install is `pip install --no-deps --require-hashes`, so pip never checks
+# semgrep's declared pin; the override only decides what the lock file records.
+#
+# Remove this file, the `mcp` line in semgrep.in and the --override flag once a semgrep
+# release requires mcp >= 1.30.0.
+mcp==1.30.0
+
+# opentelemetry-api <= 1.45.0 carries GHSA-xcq7-p3pf-p88h (unbounded tracestate parsing), fixed in
+# 1.45.1. semgrep (up to 1.182.1) pins the opentelemetry family to ~=1.37.0 / ~=0.58b0, so the
+# whole family is overridden together (sdk 1.45.1 requires api ==1.45.1). Remove these once a
+# semgrep release allows opentelemetry-api >= 1.45.1.
+opentelemetry-api==1.45.1
+opentelemetry-sdk==1.45.1
+opentelemetry-exporter-otlp-proto-http==1.45.1
+opentelemetry-instrumentation-requests==0.66b1
+opentelemetry-instrumentation-threading==0.66b1

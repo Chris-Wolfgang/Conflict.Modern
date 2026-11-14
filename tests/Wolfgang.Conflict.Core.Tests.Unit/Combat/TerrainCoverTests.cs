@@ -26,4 +26,11 @@ public class TerrainCoverTests
         Assert.True(TerrainCover.CoverFor(Terrain.Forest) < TerrainCover.CoverFor(Terrain.Urban));
         Assert.True(TerrainCover.CoverFor(Terrain.Urban) < TerrainCover.CoverFor(Terrain.Mountain));
     }
+
+
+    [Fact]
+    public void CoverFor_throws_when_terrain_is_not_a_defined_value()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => TerrainCover.CoverFor((Terrain)999));
+    }
 }

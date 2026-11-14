@@ -245,4 +245,82 @@ public class VisionSystemTests
             () => system.ComputeVisibility(null!, GameEngineTestFixture.BlueFactionId)
         );
     }
+
+
+    [Fact]
+    public void ComputeVisibility_throws_when_faction_id_is_unknown()
+    {
+        var state = StateWithMap(HexMap.OfRectangle(5, 5, Terrain.Plain));
+        var system = CreateSystem();
+
+        var ex = Assert.Throws<InvalidOperationException>
+        (
+            () => system.ComputeVisibility(state, "green")
+        );
+
+        Assert.Contains("'green'", ex.Message);
+    }
+
+
+    [Fact]
+    public void ComputeVisibility_throws_when_a_unit_is_off_the_map()
+    {
+        var blue = GameEngineTestFixture.Infantry(1, GameEngineTestFixture.BlueFactionId, new HexCoord(20, 20));
+        var state = StateWithMap(HexMap.OfRectangle(5, 5, Terrain.Plain), blue);
+        var system = CreateSystem();
+
+        var ex = Assert.Throws<InvalidOperationException>
+        (
+            () => system.ComputeVisibility(state, GameEngineTestFixture.BlueFactionId)
+        );
+
+        Assert.Contains("not on the map", ex.Message);
+    }
+
+
+    [Fact]
+    public void ComputeVisibility_throws_when_a_unit_has_an_unknown_unit_type()
+    {
+        var blue = GameEngineTestFixture.Infantry(1, GameEngineTestFixture.BlueFactionId, new HexCoord(2, 2)) with
+        {
+            UnitTypeId = "no-such-type"
+        };
+        var state = StateWithMap(HexMap.OfRectangle(5, 5, Terrain.Plain), blue);
+        var system = CreateSystem();
+
+        var ex = Assert.Throws<InvalidOperationException>
+        (
+            () => system.ComputeVisibility(state, GameEngineTestFixture.BlueFactionId)
+        );
+
+        Assert.Contains("'no-such-type'", ex.Message);
+    }
+
+
+    [Fact]
+    public void HasLineOfSight_throws_when_observer_is_off_the_map()
+    {
+        var state = StateWithMap(HexMap.OfRectangle(5, 5, Terrain.Plain));
+
+        var ex = Assert.Throws<InvalidOperationException>
+        (
+            () => VisionSystem.HasLineOfSight(state, new HexCoord(20, 20), HexCoord.Origin, observerIsAirborne: false)
+        );
+
+        Assert.Contains("Observer hex", ex.Message);
+    }
+
+
+    [Fact]
+    public void HasLineOfSight_throws_when_target_is_off_the_map()
+    {
+        var state = StateWithMap(HexMap.OfRectangle(5, 5, Terrain.Plain));
+
+        var ex = Assert.Throws<InvalidOperationException>
+        (
+            () => VisionSystem.HasLineOfSight(state, HexCoord.Origin, new HexCoord(20, 20), observerIsAirborne: false)
+        );
+
+        Assert.Contains("Target hex", ex.Message);
+    }
 }

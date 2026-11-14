@@ -109,4 +109,18 @@ public class GameEngineEndTurnTests
 
         Assert.Contains(commands, c => c is MoveCommand m && m.UnitId == blue.Id);
     }
+
+
+    [Fact]
+    public void EndTurn_emits_a_TurnEnded_event_carrying_the_new_turn_number()
+    {
+        var state = GameEngineTestFixture.CreateState();
+        var engine = GameEngineTestFixture.CreateEngine();
+
+        var afterBlue = engine.Apply(state, new EndTurnCommand());
+        var afterRed = engine.Apply(afterBlue.State, new EndTurnCommand());
+
+        Assert.Equal(1, Assert.Single(afterBlue.Events.OfType<TurnEnded>()).NewTurnNumber);
+        Assert.Equal(2, Assert.Single(afterRed.Events.OfType<TurnEnded>()).NewTurnNumber);
+    }
 }

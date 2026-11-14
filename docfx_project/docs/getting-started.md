@@ -1,6 +1,6 @@
 # Getting Started
 
-This guide will help you quickly get up and running with Wolfgang.Conflict.
+This guide will help you quickly get up and running with Wolfgang.Conflict.Modern.
 
 ## Prerequisites
 
@@ -14,13 +14,13 @@ This guide will help you quickly get up and running with Wolfgang.Conflict.
 ### Via NuGet Package Manager
 
 ```bash
-dotnet add package Wolfgang.Conflict
+dotnet add package Wolfgang.Conflict.Modern
 ```
 
 ### Via Package Manager Console
 
 ```powershell
-Install-Package Wolfgang.Conflict
+Install-Package Wolfgang.Conflict.Modern
 ```
 
 ## Quick Start
@@ -31,7 +31,7 @@ Install-Package Wolfgang.Conflict
 // Add your quick start code example here
 // This should show the simplest way to use your library
 
-using Wolfgang.Conflict;
+using Wolfgang.Conflict.Modern;
 
 // Example usage
 ```
@@ -39,8 +39,8 @@ using Wolfgang.Conflict;
 ## Next Steps
 
 - Explore the [API Reference](../api/index.md) for detailed documentation
-- Read the [Introduction](introduction.md) to learn more about Wolfgang.Conflict
-- Check out example projects in the [GitHub repository](https://github.com/Chris-Wolfgang/Conflict)
+- Read the [Introduction](introduction.md) to learn more about Wolfgang.Conflict.Modern
+- Check out example projects in the [GitHub repository](https://github.com/Chris-Wolfgang/Conflict.Modern)
 
 ## Common Issues
 
@@ -48,6 +48,6 @@ using Wolfgang.Conflict;
 
 ## Additional Resources
 
-- [GitHub Repository](https://github.com/Chris-Wolfgang/Conflict)
-- [Contributing Guidelines](https://github.com/Chris-Wolfgang/Conflict/blob/main/CONTRIBUTING.md)
-- [Report an Issue](https://github.com/Chris-Wolfgang/Conflict/issues)
+- [GitHub Repository](https://github.com/Chris-Wolfgang/Conflict.Modern)
+- [Contributing Guidelines](https://github.com/Chris-Wolfgang/Conflict.Modern/blob/main/CONTRIBUTING.md)
+- [Report an Issue](https://github.com/Chris-Wolfgang/Conflict.Modern/issues)

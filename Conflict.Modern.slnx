@@ -58,7 +58,11 @@
   </Folder>
   <Folder Name="/benchmarks/" />
   <Folder Name="/examples/" />
-  <Folder Name="/src/" />
-  <Folder Name="/tests/" />
+  <Folder Name="/src/">
+    <Project Path="src/Wolfgang.Conflict.Core/Wolfgang.Conflict.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Wolfgang.Conflict.Core.Tests.Unit/Wolfgang.Conflict.Core.Tests.Unit.csproj" />
+  </Folder>
 </Solution>
 

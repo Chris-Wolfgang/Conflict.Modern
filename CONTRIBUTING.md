@@ -1,6 +1,6 @@
-# Contributing to Wolfgang.Conflict
+# Contributing to Wolfgang.Conflict.Modern
 
-Thank you for your interest in contributing to **Wolfgang.Conflict**! We welcome contributions to help improve this project.
+Thank you for your interest in contributing to **Wolfgang.Conflict.Modern**! We welcome contributions to help improve this project.
 
 ## How Can You Contribute?
 

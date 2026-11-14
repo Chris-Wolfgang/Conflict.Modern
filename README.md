@@ -1,18 +1,17 @@
-# Wolfgang.Conflict
+# Wolfgang.Conflict.Modern
 
 A turn based modern warfare game
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-Multi--Targeted-purple.svg)](https://dotnet.microsoft.com/)
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github)](https://github.com/Chris-Wolfgang/Conflict)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Chris-Wolfgang/Conflict.Modern/badge)](https://scorecard.dev/viewer/?uri=github.com/Chris-Wolfgang/Conflict.Modern)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github)](https://github.com/Chris-Wolfgang/Conflict.Modern)
 
 ---
 
 ## 📦 Installation
 
 ```bash
-dotnet add package Wolfgang.Conflict
+dotnet add package Wolfgang.Conflict.Modern
 ```
 
 **NuGet Package:** Not applicable
@@ -27,7 +26,7 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 ## 📚 Documentation
 
-- **GitHub Repository:** [https://github.com/Chris-Wolfgang/Conflict](https://github.com/Chris-Wolfgang/Conflict)
+- **GitHub Repository:** [https://github.com/Chris-Wolfgang/Conflict.Modern](https://github.com/Chris-Wolfgang/Conflict.Modern)
 - **API Documentation:** https://Chris-Wolfgang.github.io/Conflict/
 - **Formatting Guide:** [README-FORMATTING.md](README-FORMATTING.md)
 - **Contributing Guide:** [CONTRIBUTING.md](CONTRIBUTING.md)

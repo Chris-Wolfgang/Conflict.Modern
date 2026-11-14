@@ -60,18 +60,11 @@ public class CombatResolverResolveTests
             defenderDexterity: 50
         );
 
-        // Try several seeds; the 5% floor means *some* will hit. Pick one that misses.
-        for (var seed = 0; seed < 20; seed++)
-        {
-            var result = CombatResolver.Resolve(attempt, new Random(seed));
-            if (!result.DidHit)
-            {
-                Assert.Equal(0, result.Damage);
-                return;
-            }
-        }
+        // Roll 100 is above the 95% ceiling, so it always misses.
+        var result = CombatResolver.Resolve(attempt, new FixedRollRandom(100));
 
-        Assert.Fail("Expected at least one miss within 20 seeds.");
+        Assert.False(result.DidHit);
+        Assert.Equal(0, result.Damage);
     }
 
 
@@ -79,7 +72,7 @@ public class CombatResolverResolveTests
     public void Resolve_deals_raw_damage_minus_armor_on_a_hit_against_a_known_armor_class()
     {
         // Sabot vs HeavyArmor: raw 16, defender armor 6 → 10 damage on hit.
-        // Defender Dex=1, Luck=1 → hit chance 60 − 10 = 50; pick a seed that hits.
+        // Defender Dex=1, Luck=1 → hit chance 60 − 10 = 50.
         var attempt = CombatTestFixture.Attempt
         (
             CombatTestFixture.TankSabot(),
@@ -89,17 +82,11 @@ public class CombatResolverResolveTests
             defenderLuck: 1
         );
 
-        for (var seed = 0; seed < 20; seed++)
-        {
-            var result = CombatResolver.Resolve(attempt, new Random(seed));
-            if (result.DidHit)
-            {
-                Assert.Equal(16 - 6, result.Damage);
-                return;
-            }
-        }
+        // Roll 1 is at or below the 5% floor, so it always hits.
+        var result = CombatResolver.Resolve(attempt, new FixedRollRandom(1));
 
-        Assert.Fail("Expected at least one hit within 20 seeds.");
+        Assert.True(result.DidHit);
+        Assert.Equal(16 - 6, result.Damage);
     }
 
 
@@ -116,17 +103,11 @@ public class CombatResolverResolveTests
             defenderLuck: 1
         );
 
-        for (var seed = 0; seed < 20; seed++)
-        {
-            var result = CombatResolver.Resolve(attempt, new Random(seed));
-            if (result.DidHit)
-            {
-                Assert.Equal(0, result.Damage);
-                return;
-            }
-        }
+        // Roll 1 is at or below the 5% floor, so it always hits.
+        var result = CombatResolver.Resolve(attempt, new FixedRollRandom(1));
 
-        Assert.Fail("Expected at least one hit within 20 seeds.");
+        Assert.True(result.DidHit);
+        Assert.Equal(0, result.Damage);
     }
 
 
@@ -143,17 +124,11 @@ public class CombatResolverResolveTests
             defenderLuck: 1
         );
 
-        for (var seed = 0; seed < 20; seed++)
-        {
-            var result = CombatResolver.Resolve(attempt, new Random(seed));
-            if (result.DidHit)
-            {
-                Assert.Equal(0, result.Damage);
-                return;
-            }
-        }
+        // Roll 1 is at or below the 5% floor, so it always hits.
+        var result = CombatResolver.Resolve(attempt, new FixedRollRandom(1));
 
-        Assert.Fail("Expected at least one hit within 20 seeds.");
+        Assert.True(result.DidHit);
+        Assert.Equal(0, result.Damage);
     }
 
 

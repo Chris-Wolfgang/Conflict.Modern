@@ -197,4 +197,27 @@ public class CombatResolverResolveTests
 
         Assert.Equal(1, result.RngStepsConsumed);
     }
+
+
+    [Fact]
+    public void Resolve_throws_when_weapon_is_null()
+    {
+        var attempt = CombatTestFixture.Attempt(CombatTestFixture.SmallArms()) with { Weapon = null! };
+
+        var ex = Assert.Throws<InvalidOperationException>(() => CombatResolver.Resolve(attempt, new FixedRollRandom(1)));
+
+        Assert.Contains("Weapon must not be null", ex.Message);
+    }
+
+
+    [Fact]
+    public void Resolve_throws_when_weapon_damage_table_is_null()
+    {
+        var weapon = CombatTestFixture.SmallArms() with { DamageByArmor = null! };
+        var attempt = CombatTestFixture.Attempt(weapon);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => CombatResolver.Resolve(attempt, new FixedRollRandom(1)));
+
+        Assert.Contains("DamageByArmor must not be null", ex.Message);
+    }
 }

@@ -1,7 +1,11 @@
+using Wolfgang.Conflict.Core.Catalog;
 using Wolfgang.Conflict.Core.Commands;
 using Wolfgang.Conflict.Core.Events;
 using Wolfgang.Conflict.Core.Hex;
+using Wolfgang.Conflict.Core.Map;
+using Wolfgang.Conflict.Core.State;
 using Wolfgang.Conflict.Core.Units;
+using GameUnit = Wolfgang.Conflict.Core.Units.Unit;
 
 namespace Wolfgang.Conflict.Core.Tests.Unit.Engine;
 
@@ -201,5 +205,133 @@ public class GameEngineMoveTests
     public void Constructor_throws_when_factions_is_null()
     {
         Assert.Throws<ArgumentNullException>(() => new Core.Engine.GameEngine(null!));
+    }
+
+
+    private sealed record UnsupportedCommand : Command;
+
+
+    private static GameState StateWithWaterEastOfOrigin(params GameUnit[] units)
+    {
+        var state = GameEngineTestFixture.CreateState(units);
+        var tiles = state.Map.Coords.ToDictionary(c => c, _ => new Tile(Terrain.Plain));
+        tiles[new HexCoord(1, 0)] = new Tile(Terrain.Water);
+
+        return state with { Map = new HexMap(tiles) };
+    }
+
+
+    [Fact]
+    public void Apply_throws_when_command_type_is_not_supported()
+    {
+        var state = GameEngineTestFixture.CreateState();
+        var engine = GameEngineTestFixture.CreateEngine();
+
+        var ex = Assert.Throws<InvalidOperationException>(() => engine.Apply(state, new UnsupportedCommand()));
+
+        Assert.Contains(nameof(UnsupportedCommand), ex.Message);
+    }
+
+
+    [Fact]
+    public void Apply_throws_when_path_is_null()
+    {
+        var blue = GameEngineTestFixture.Infantry(1, GameEngineTestFixture.BlueFactionId, HexCoord.Origin);
+        var state = GameEngineTestFixture.CreateState(blue);
+        var engine = GameEngineTestFixture.CreateEngine();
+
+        var ex = Assert.Throws<InvalidOperationException>(() => engine.Apply(state, new MoveCommand(blue.Id, null!)));
+
+        Assert.Contains("path is null", ex.Message);
+    }
+
+
+    [Fact]
+    public void Apply_throws_when_path_has_no_destination_hex()
+    {
+        var blue = GameEngineTestFixture.Infantry(1, GameEngineTestFixture.BlueFactionId, HexCoord.Origin);
+        var state = GameEngineTestFixture.CreateState(blue);
+        var engine = GameEngineTestFixture.CreateEngine();
+
+        var ex = Assert.Throws<InvalidOperationException>(() => engine.Apply(state, new MoveCommand(blue.Id, [HexCoord.Origin])));
+
+        Assert.Contains("at least one destination", ex.Message);
+    }
+
+
+    [Fact]
+    public void Apply_throws_when_path_leaves_the_map()
+    {
+        var blue = GameEngineTestFixture.Infantry(1, GameEngineTestFixture.BlueFactionId, HexCoord.Origin);
+        var state = GameEngineTestFixture.CreateState(blue);
+        var engine = GameEngineTestFixture.CreateEngine();
+
+        var move = new MoveCommand(blue.Id, [HexCoord.Origin, new HexCoord(-1, 0)]);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => engine.Apply(state, move));
+
+        Assert.Contains("leaves the map", ex.Message);
+    }
+
+
+    [Fact]
+    public void Apply_throws_when_path_enters_terrain_the_unit_cannot_cross()
+    {
+        var blue = GameEngineTestFixture.Infantry(1, GameEngineTestFixture.BlueFactionId, HexCoord.Origin);
+        var state = StateWithWaterEastOfOrigin(blue);
+        var engine = GameEngineTestFixture.CreateEngine();
+
+        var move = new MoveCommand(blue.Id, [HexCoord.Origin, new HexCoord(1, 0)]);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => engine.Apply(state, move));
+
+        Assert.Contains("cannot enter Water", ex.Message);
+    }
+
+
+    [Fact]
+    public void GetLegalMoves_does_not_include_terrain_the_unit_cannot_cross()
+    {
+        var blue = GameEngineTestFixture.Infantry(1, GameEngineTestFixture.BlueFactionId, HexCoord.Origin);
+        var state = StateWithWaterEastOfOrigin(blue);
+        var engine = GameEngineTestFixture.CreateEngine();
+
+        var moves = engine.GetLegalMoves(state, blue.Id).ToList();
+
+        Assert.NotEmpty(moves);
+        Assert.DoesNotContain(moves, m => m.Path.Contains(new HexCoord(1, 0)));
+    }
+
+
+    [Fact]
+    public void Apply_throws_when_unit_belongs_to_an_unknown_faction()
+    {
+        var green = GameEngineTestFixture.Infantry(1, "green", HexCoord.Origin);
+        var state = GameEngineTestFixture.CreateState(green);
+        var engine = GameEngineTestFixture.CreateEngine();
+
+        var move = new MoveCommand(green.Id, [HexCoord.Origin, new HexCoord(1, 0)]);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => engine.Apply(state, move));
+
+        Assert.Contains("unknown faction 'green'", ex.Message);
+    }
+
+
+    [Fact]
+    public void Apply_throws_when_unit_has_an_unknown_unit_type()
+    {
+        var blue = GameEngineTestFixture.Infantry(1, GameEngineTestFixture.BlueFactionId, HexCoord.Origin) with
+        {
+            UnitTypeId = "no-such-type"
+        };
+        var state = GameEngineTestFixture.CreateState(blue);
+        var engine = GameEngineTestFixture.CreateEngine();
+
+        var move = new MoveCommand(blue.Id, [HexCoord.Origin, new HexCoord(1, 0)]);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => engine.Apply(state, move));
+
+        Assert.Contains("no unit type 'no-such-type'", ex.Message);
     }
 }

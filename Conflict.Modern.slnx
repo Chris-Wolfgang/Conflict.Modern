@@ -22,6 +22,15 @@
     <File Path=".github/ISSUE_TEMPLATE/feature_request.yaml" />
   </Folder>
   <Folder Name="/.root/.github/workflows/">
+    <File Path=".github/workflows/stryker.yaml" />
+    <File Path=".github/workflows/sourcelink.yaml" />
+    <File Path=".github/workflows/semgrep.yaml" />
+    <File Path=".github/workflows/security-alerts.yml" />
+    <File Path=".github/workflows/scorecard.yaml" />
+    <File Path=".github/workflows/sbom.yaml" />
+    <File Path=".github/workflows/license-audit.yaml" />
+    <File Path=".github/workflows/benchmarks.yaml" />
+    <File Path=".github/workflows/actions-audit.yaml" />
     <File Path=".github/workflows/build-all-versions.yaml" />
     <File Path=".github/workflows/codeql.yaml" />
     <File Path=".github/workflows/docfx.yaml" />
@@ -34,13 +43,18 @@
     <File Path="docs/WORKFLOW_SECURITY.md" />
   </Folder>
   <Folder Name="/.root/scripts/">
+    <File Path="scripts/tfm-parity.ps1" />
+    <File Path="scripts/security-alerts.ps1" />
+    <File Path="scripts/restack.ps1" />
+    <File Path="scripts/pin-actions.ps1" />
+    <File Path="scripts/changelog.ps1" />
+    <File Path="scripts/Validate-DocsDeploy.ps1" />
     <File Path="scripts/build-pr.ps1" />
     <File Path="scripts/Fix-BranchRuleset.ps1" />
     <File Path="scripts/format.ps1" />
     <File Path="scripts/Setup-BranchRuleset.ps1" />
     <File Path="scripts/Setup-GitHubPages.ps1" />
     <File Path="scripts/Setup-Labels.ps1" />
-    <File Path="scripts/setup.ps1" />
   </Folder>
   <Folder Name="/benchmarks/" />
   <Folder Name="/examples/" />

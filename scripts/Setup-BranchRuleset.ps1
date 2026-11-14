@@ -25,6 +25,19 @@
 .PARAMETER BranchName
     The branch to protect. Default is "main".
 
+.PARAMETER ForceCodeScanningRule
+    Add the CodeQL "code_scanning" rule even when the branch has no CodeQL analysis yet. By default the
+    rule is added only when at least one CodeQL analysis exists for the branch: a code_scanning rule
+    with no analysis behind it blocks every pull request with "Waiting for Code Scanning results".
+    codeql.yaml analyses the workflow files ('actions' language) on every repository, so the first
+    push to the branch after the repository is created produces that analysis; on a brand-new
+    repository run this script after that first CodeQL run (or re-run it with just this rule to add).
+
+.PARAMETER RequireLinearHistory
+    Also add the "required_linear_history" rule and restrict merges to squash and rebase (no merge
+    commits). Satisfies baseline item 9. Stacked PRs then need scripts/restack.ps1 after each merge —
+    see docs/STACKED-PRS.md. Off by default so existing repositories keep merge commits.
+
 .EXAMPLE
     .\Setup-BranchRuleset.ps1
     Creates the ruleset for the current repository with interactive prompts
@@ -42,18 +55,21 @@
     - Write access with "Administration" permission enabled
     
     These permissions are necessary to create and modify repository rulesets.
-    
-    Note: Copilot code review is not supported through the rulesets API and must be
-    enabled manually in the GitHub repository UI after running this script.
 #>
 
 [CmdletBinding()]
 param(
     [Parameter()]
-    [string]$Repository = "@Chris-Wolfgang/Conflict.Modern",
+    [string]$Repository = "Chris-Wolfgang/Conflict.Modern",
     
     [Parameter()]
-    [string]$BranchName = "main"
+    [string]$BranchName = "main",
+
+    [Parameter()]
+    [switch]$RequireLinearHistory,
+
+    [Parameter()]
+    [switch]$ForceCodeScanningRule
 )
 
 # Check if gh CLI is installed
@@ -79,7 +95,7 @@ try {
 }
 
 # Determine repository
-if ($Repository -eq "@Chris-Wolfgang/Conflict.Modern" -or -not $Repository) {
+if ($Repository -eq "Chris-Wolfgang/Conflict.Modern" -or -not $Repository) {
     # Placeholders not replaced or no repository specified - auto-detect
     Write-Host "🔍 Detecting current repository..." -ForegroundColor Cyan
     try {
@@ -87,7 +103,7 @@ if ($Repository -eq "@Chris-Wolfgang/Conflict.Modern" -or -not $Repository) {
         $Repository = $repoInfo.nameWithOwner
         Write-Host "✅ Using repository: $Repository" -ForegroundColor Green
     } catch {
-        if ($Repository -eq "@Chris-Wolfgang/Conflict.Modern") {
+        if ($Repository -eq "Chris-Wolfgang/Conflict.Modern") {
             Write-Error "❌ Could not detect repository. Please run the setup script (pwsh ./scripts/setup.ps1) first to replace placeholders, or specify -Repository parameter."
         } else {
             Write-Error "❌ Could not detect repository. Please run from within a git repository or specify -Repository parameter."
@@ -101,21 +117,58 @@ if ($Repository -eq "@Chris-Wolfgang/Conflict.Modern" -or -not $Repository) {
 Write-Host "`n🛡️  Setting up branch protection ruleset for: $Repository" -ForegroundColor Cyan
 Write-Host "📌 Protected branch: $BranchName`n" -ForegroundColor Cyan
 
+# The CodeQL code_scanning rule needs at least one CodeQL analysis on the branch or it blocks
+# every PR. codeql.yaml's 'actions' leg analyses every repository (C# or not), so the analysis
+# exists once the workflow has run on the branch - check for it rather than guessing from the tree.
+$addCodeScanningRule = $ForceCodeScanningRule.IsPresent
+if (-not $addCodeScanningRule) {
+    Write-Host "🔍 Checking $BranchName for a CodeQL analysis (code_scanning rule)..." -ForegroundColor Yellow
+    $analyses = gh api "/repos/$Repository/code-scanning/analyses?ref=refs/heads/$BranchName&tool_name=CodeQL&per_page=1" --jq 'length' 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        # 404 = code scanning not enabled / no analyses yet; anything else is worth seeing.
+        Write-Host "ℹ️  Could not list CodeQL analyses for $BranchName (code scanning not enabled yet?)" -ForegroundColor Yellow
+        $analyses = 0
+    }
+    $addCodeScanningRule = ([int]"$analyses" -gt 0)
+    if ($addCodeScanningRule) {
+        Write-Host "✅ CodeQL analysis found on $BranchName - the code_scanning rule will be added" -ForegroundColor Green
+    } else {
+        Write-Host "ℹ️  No CodeQL analysis on $BranchName yet - skipping the code_scanning rule (it would block every PR with 'Waiting for Code Scanning results'). Let codeql.yaml run once on $BranchName, then add the rule in Settings > Rules, or re-run with -ForceCodeScanningRule." -ForegroundColor Yellow
+    }
+}
+
 # Check if ruleset already exists
 Write-Host "🔍 Checking for existing rulesets..." -ForegroundColor Yellow
 try {
-    $rulesetOutput = gh api `
-        -H "Accept: application/vnd.github+json" `
-        -H "X-GitHub-Api-Version: 2022-11-28" `
-        "/repos/$Repository/rulesets" `
-        --paginate `
-        --jq '.[] | select(.name == "Protect main branch")' 2>&1
+    # Use a jq array wrapper ('[ .[] | select(...) ]') so the output is always
+    # a single valid JSON value (an array) even when multiple rulesets match —
+    # bare '.[] | select(...)' emits one JSON object per match, which is not
+    # valid JSON and breaks ConvertFrom-Json. Redirect stderr to a temp file
+    # so gh's progress/warnings can't poison the JSON stream on stdout.
+    $rulesetErr = [System.IO.Path]::GetTempFileName()
+    $rulesetErrText = $null
+    try {
+        $rulesetOutput = gh api `
+            -H "Accept: application/vnd.github+json" `
+            -H "X-GitHub-Api-Version: 2022-11-28" `
+            "/repos/$Repository/rulesets" `
+            --paginate `
+            --jq '[ .[] | select(.name == "Protect main branch") ]' 2> $rulesetErr
+    } finally {
+        if (Test-Path -LiteralPath $rulesetErr) {
+            # Capture stderr before deletion so the warning below has
+            # diagnostic content. Mirrors Fix-BranchRuleset.ps1 (~line 115).
+            $rulesetErrText = (Get-Content -LiteralPath $rulesetErr -Raw -ErrorAction SilentlyContinue)
+            Remove-Item -LiteralPath $rulesetErr -Force
+        }
+    }
 
     if ($LASTEXITCODE -ne 0) {
-        Write-Warning "⚠️  Could not check for existing rulesets (API returned exit code $LASTEXITCODE). Continuing..."
+        $errSuffix = if ([string]::IsNullOrWhiteSpace($rulesetErrText)) { '' } else { " gh stderr: $($rulesetErrText.Trim())" }
+        Write-Warning "⚠️  Could not check for existing rulesets (API returned exit code $LASTEXITCODE).$errSuffix Continuing..."
     } elseif ($rulesetOutput) {
         $matchingRulesets = $rulesetOutput | ConvertFrom-Json
-        $existingRuleset = $matchingRulesets | Select-Object -First 1
+        $existingRuleset = @($matchingRulesets) | Select-Object -First 1
 
         if ($existingRuleset) {
             Write-Host "✅ Ruleset 'Protect main branch' already exists!" -ForegroundColor Green
@@ -179,6 +232,9 @@ $rulesetConfig = @{
                 require_code_owner_review = $requireCodeOwnerReview
                 require_last_push_approval = $false
                 required_review_thread_resolution = $true
+                # With linear history only squash/rebase can satisfy the rule; hide "merge commit" so the
+                # button cannot pick a method the ruleset would reject.
+                allowed_merge_methods = $(if ($RequireLinearHistory) { @("squash", "rebase") } else { @("merge", "squash", "rebase") })
             }
         },
         @{
@@ -190,34 +246,69 @@ $rulesetConfig = @{
                 # and doesn't run for a PR, GitHub will treat the required check as missing and
                 # block the merge. All required status checks must run on every PR.
                 required_status_checks = @(
+                    @{ context = "Protected Files Guard" },
                     @{ context = "Detect .NET Projects" },
                     @{ context = "Stage 1: Linux Tests (.NET 5.0-10.0) + Coverage Gate" },
                     @{ context = "Stage 2: Windows Tests (.NET 5.0-10.0, Framework 4.6.2-4.8.1)" },
                     @{ context = "Stage 3: macOS Tests (.NET 6.0-10.0)" },
                     @{ context = "Security Scan (DevSkim)" },
                     @{ context = "Security Scan (CodeQL) (csharp)" },
-                    @{ context = "Secrets Scan (gitleaks)" }
+                    @{ context = "Secrets Scan (gitleaks)" },
+                    @{ context = "Changelog Fragment Check" }
                 )
             }
         },
-        # NOTE: the code_scanning *rule type* (which checks the CodeQL alerts dashboard) is not
-        # included because it requires a CodeQL workflow to have run previously on the repo;
-        # without prior analyses it blocks all PRs. The CodeQL job IS required above as a
-        # status check ("Security Scan (CodeQL) (csharp)"), which only requires that the
-        # CodeQL build/analysis succeed on each PR.
-        # NOTE: Copilot code review is not included in this API-created payload because
-        # it is not currently supported through the rulesets API. After the ruleset is
-        # created, enable Copilot code review settings manually in the GitHub repository UI.
         @{
             type = "non_fast_forward"
         },
         @{
             type = "deletion"
+        },
+        # Baseline item 9: no merge commits on the protected branch (squash/rebase only).
+        # Added only with -RequireLinearHistory; see docs/STACKED-PRS.md for the stacked-PR workflow.
+        $(if ($RequireLinearHistory) { @{ type = "required_linear_history" } }),
+        # The CodeQL alerts-dashboard gate. Only blocks merges when the alerts
+        # threshold is exceeded; the underlying CodeQL workflow already runs as
+        # a required status check above, so this is the second-tier "results"
+        # gate. Without at least one CodeQL analysis on the branch it blocks
+        # every PR ("Waiting for Code Scanning results") - hence the
+        # $addCodeScanningRule check above (override with -ForceCodeScanningRule).
+        $(if ($addCodeScanningRule) { @{
+            type = "code_scanning"
+            parameters = @{
+                code_scanning_tools = @(
+                    @{
+                        alerts_threshold          = "errors"
+                        security_alerts_threshold = "high_or_higher"
+                        tool                      = "CodeQL"
+                    }
+                )
+            }
+        } }),
+        # Auto-request a Copilot review on every PR, including drafts and on
+        # subsequent pushes. The rulesets API now supports this rule type
+        # (earlier versions of this script left the toggle to the UI).
+        @{
+            type = "copilot_code_review"
+            parameters = @{
+                review_draft_pull_requests = $true
+                review_on_push             = $true
+            }
+        },
+        # Block merges when the code-quality check (analyzer / formatter) emits
+        # errors. Severity matches the canonical libraries (errors only — warnings
+        # don't block, the build itself already promotes them in Release mode).
+        @{
+            type = "code_quality"
+            parameters = @{
+                severity = "errors"
+            }
         }
     )
 }
 
-# Convert to JSON
+# Convert to JSON (drop any empty placeholder left by an unset optional rule)
+$rulesetConfig.rules = @($rulesetConfig.rules | Where-Object { $_ -is [hashtable] })
 $jsonConfig = $rulesetConfig | ConvertTo-Json -Depth 10
 
 # Save to temporary file
@@ -246,6 +337,7 @@ try {
             Write-Host "   ✅ No approvals required (single-developer mode)" -ForegroundColor Gray
         }
         Write-Host "   ✅ Required status checks (must pass before merging):" -ForegroundColor Gray
+        Write-Host "      - Protected Files Guard" -ForegroundColor DarkGray
         Write-Host "      - Detect .NET Projects" -ForegroundColor DarkGray
         Write-Host "      - Stage 1: Linux Tests (.NET 5.0-10.0) + Coverage Gate" -ForegroundColor DarkGray
         Write-Host "      - Stage 2: Windows Tests (.NET 5.0-10.0, Framework 4.6.2-4.8.1)" -ForegroundColor DarkGray
@@ -256,14 +348,33 @@ try {
         Write-Host "   ✅ Branches must be up to date before merging" -ForegroundColor Gray
         Write-Host "   ✅ Conversation resolution required before merging" -ForegroundColor Gray
         Write-Host "   ✅ Stale reviews dismissed when new commits are pushed" -ForegroundColor Gray
-        Write-Host "   ⚠️  Copilot code review: enable manually in repository settings" -ForegroundColor Yellow
-        Write-Host "      (Not yet supported through the rulesets API)" -ForegroundColor DarkGray
         Write-Host "   ✅ Force pushes blocked on $BranchName branch" -ForegroundColor Gray
         Write-Host "   ✅ Branch deletion prevented for $BranchName" -ForegroundColor Gray
+        if ($addCodeScanningRule) {
+            Write-Host "   ✅ Code scanning: CodeQL alerts gate (errors / high+)" -ForegroundColor Gray
+        } else {
+            Write-Host "   ⏭️  Code scanning: CodeQL alerts gate NOT added (no CodeQL analysis on $BranchName yet)" -ForegroundColor Yellow
+        }
+        Write-Host "   ✅ Copilot code review: auto-requested on every PR (incl. drafts, on push)" -ForegroundColor Gray
+        Write-Host "   ✅ Code quality gate: blocks on analyzer / formatter errors" -ForegroundColor Gray
         Write-Host "   ✅ No bypass allowed - all users must follow these rules" -ForegroundColor Gray
         
         Write-Host "`n🔗 View ruleset at:" -ForegroundColor Cyan
         Write-Host "   https://github.com/$Repository/settings/rules" -ForegroundColor Blue
+        # Self-delete: this is a one-time bootstrap script. After a successful
+        # ruleset creation, remove the script. Re-run by restoring it from the
+        # template if you need to re-create the ruleset later.
+        $selfPath = $PSCommandPath
+        if ($selfPath -and (Test-Path -LiteralPath $selfPath)) {
+            try {
+                Remove-Item -LiteralPath $selfPath -Force
+                Write-Host ""
+                Write-Host "Self-deleted: $selfPath (one-time bootstrap script)" -ForegroundColor DarkGray
+                Write-Host "   Restore from the template to re-run." -ForegroundColor DarkGray
+            } catch {
+                Write-Warning "Could not self-delete $selfPath - remove manually."
+            }
+        }
     } else {
         Write-Error "❌ Failed to create ruleset"
         Write-Host $response -ForegroundColor Red
@@ -301,4 +412,3 @@ try {
 }
 
 Write-Host "`n🎉 Setup complete!" -ForegroundColor Green
-

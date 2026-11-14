@@ -1,0 +1,15 @@
+{
+  "template": "Chris-Wolfgang/repo-template",
+  "commit": "d16994ec7f57e52dcbe8dd7dc700dc54649e9bcf",
+  "updated": "2026-09-20",
+  "placeholders": {
+    "GITHUB_OWNER": "Chris-Wolfgang",
+    "REPO_NAME": "Conflict.Modern",
+    "GITHUB_REPO_URL": "https://github.com/Chris-Wolfgang/Conflict.Modern",
+    "DOCS_URL": "https://chris-wolfgang.github.io/Conflict.Modern/",
+    "PROJECT_NAME": "Conflict.Modern",
+    "PACKAGE_NAME": "Conflict.Modern",
+    "LICENSE_TYPE": "MIT"
+  },
+  "note": "Written by scripts/setup.ps1 and scripts/upgrade.ps1; the template commit this repository last took template-managed files from, and the placeholder values setup used."
+}

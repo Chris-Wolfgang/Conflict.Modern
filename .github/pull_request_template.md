@@ -4,6 +4,18 @@
 
 Fixes/Complete # (issue)
 
+<!--
+If this PR addresses a Maintenance framework sub-issue, link it explicitly so the
+project board auto-marks the item as Done on merge:
+
+  Fixes #<maintenance-task-issue-number>
+
+The Maintenance framework tracks ongoing improvement work (security, performance,
+testing, cleanup, docs, API, CI/CD) — see the parent `Maintenance: <repo>` issue
+for details.
+-->
+
+
 ## Type of change
 
 Please delete options that are not relevant.
@@ -30,6 +42,8 @@ Please delete options that are not relevant.
 - [ ] My changes generate no new warnings
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] New and existing unit tests pass locally with my changes
+- [ ] If this PR changes `src/`, I added a fragment under `changelog/unreleased/` (or applied the `no-changelog` label) — see [changelog/unreleased/README.md](../blob/main/changelog/unreleased/README.md)
+- [ ] I did not bundle protected configuration files (`.editorconfig`, `Directory.Build.props`, workflows, …) with unrelated code — they are held for maintainer review
 
 ## Screenshots (if applicable)
 

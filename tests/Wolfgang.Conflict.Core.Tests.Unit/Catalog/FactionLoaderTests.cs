@@ -264,4 +264,63 @@ public class FactionLoaderTests
     {
         Assert.Throws<ArgumentNullException>(() => FactionLoader.Save(null!));
     }
+
+
+    [Fact]
+    public void Load_throws_when_json_is_the_null_literal()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() => FactionLoader.Load("null"));
+
+        Assert.Contains("parsed to null", ex.Message, StringComparison.Ordinal);
+    }
+
+
+    [Fact]
+    public void Load_throws_when_weapons_contains_a_null_entry()
+    {
+        const string json = """
+            { "id": "blue", "displayName": "Blue", "color": "#1e88e5", "weapons": [null], "units": [] }
+            """;
+
+        var ex = Assert.Throws<InvalidOperationException>(() => FactionLoader.Load(json));
+
+        Assert.Contains("null weapon system entry", ex.Message, StringComparison.Ordinal);
+    }
+
+
+    [Theory]
+    [InlineData("\"minRange\": -1, \"maxRange\": 1, \"accuracy\": 50, \"damageByArmor\": {}, \"ammoCapacity\": 1", "minRange must be >= 0")]
+    [InlineData("\"minRange\": 2, \"maxRange\": 1, \"accuracy\": 50, \"damageByArmor\": {}, \"ammoCapacity\": 1", "maxRange (1) must be >= minRange (2)")]
+    [InlineData("\"minRange\": 1, \"maxRange\": 1, \"accuracy\": -1, \"damageByArmor\": {}, \"ammoCapacity\": 1", "accuracy must be")]
+    [InlineData("\"minRange\": 1, \"maxRange\": 1, \"accuracy\": 101, \"damageByArmor\": {}, \"ammoCapacity\": 1", "accuracy must be")]
+    [InlineData("\"minRange\": 1, \"maxRange\": 1, \"accuracy\": 50, \"damageByArmor\": {}, \"ammoCapacity\": -1", "ammoCapacity must be >= 0")]
+    [InlineData("\"minRange\": 1, \"maxRange\": 1, \"accuracy\": 50, \"ammoCapacity\": 1", "damageByArmor is required")]
+    public void Load_throws_when_a_weapon_field_is_invalid(string weaponFields, string expectedMessage)
+    {
+        var json = "{ \"id\": \"blue\", \"displayName\": \"Blue\", \"color\": \"#1e88e5\", \"units\": [], "
+            + "\"weapons\": [ { \"id\": \"w\", \"displayName\": \"W\", " + weaponFields + " } ] }";
+
+        var ex = Assert.Throws<InvalidOperationException>(() => FactionLoader.Load(json));
+
+        Assert.Contains(expectedMessage, ex.Message, StringComparison.Ordinal);
+    }
+
+
+    [Theory]
+    [InlineData("\"maxHp\": 0, \"fuelCapacity\": 0, \"sightRange\": 2, \"movementPoints\": 3, \"terrainMovementCosts\": {}", "maxHp must be > 0")]
+    [InlineData("\"maxHp\": 10, \"fuelCapacity\": -1, \"sightRange\": 2, \"movementPoints\": 3, \"terrainMovementCosts\": {}", "fuelCapacity must be >= 0")]
+    [InlineData("\"maxHp\": 10, \"fuelCapacity\": 0, \"sightRange\": -1, \"movementPoints\": 3, \"terrainMovementCosts\": {}", "sightRange must be >= 0")]
+    [InlineData("\"maxHp\": 10, \"fuelCapacity\": 0, \"sightRange\": 2, \"movementPoints\": 0, \"terrainMovementCosts\": {}", "movementPoints must be > 0")]
+    [InlineData("\"maxHp\": 10, \"fuelCapacity\": 0, \"sightRange\": 2, \"movementPoints\": 3", "terrainMovementCosts is required")]
+    public void Load_throws_when_a_unit_field_is_invalid(string unitFields, string expectedMessage)
+    {
+        var json = "{ \"id\": \"blue\", \"displayName\": \"Blue\", \"color\": \"#1e88e5\", \"weapons\": [], "
+            + "\"units\": [ { \"id\": \"u\", \"displayName\": \"U\", \"archetype\": \"infantry\", "
+            + "\"armorClass\": \"infantry\", \"armor\": 1, \"dexterity\": 1, \"luck\": 1, "
+            + "\"canCapture\": true, \"canFly\": false, \"weaponSystemIds\": [], " + unitFields + " } ] }";
+
+        var ex = Assert.Throws<InvalidOperationException>(() => FactionLoader.Load(json));
+
+        Assert.Contains(expectedMessage, ex.Message, StringComparison.Ordinal);
+    }
 }

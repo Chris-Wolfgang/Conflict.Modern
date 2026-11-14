@@ -1,4 +1,5 @@
 using Wolfgang.Conflict.Core.Hex;
+using Wolfgang.Conflict.Core.State;
 using Wolfgang.Conflict.Core.Tests.Unit.Engine;
 
 namespace Wolfgang.Conflict.Core.Tests.Unit.State;
@@ -63,5 +64,16 @@ public class GameStateTests
         Assert.Equal(2, blueUnits.Count);
         Assert.Contains(blue1, blueUnits);
         Assert.Contains(blue2, blueUnits);
+    }
+
+
+    [Fact]
+    public void Constructor_keeps_the_rules_and_the_rng_position()
+    {
+        var state = GameEngineTestFixture.CreateState() with { RngStep = 7 };
+
+        Assert.Same(RulesConfig.Default, state.Rules);
+        Assert.Equal(42, state.RngSeed);
+        Assert.Equal(7, state.RngStep);
     }
 }

@@ -57,6 +57,8 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 | .NET Core | .NET Core 3.1 |
 | .NET | .NET 5.0, .NET 6.0, .NET 7.0, .NET 8.0, .NET 9.0, .NET 10.0 |
 
+**Test matrix.** Every pull request runs the test suite on five legs and all five must pass: Linux x64, Linux ARM64, Windows x64, Windows ARM64 and macOS ARM64. Windows x64 runs every target framework (the only leg with .NET Framework); Linux x64 runs .NET Core 3.1 and .NET 5.0 and later; the three ARM64 legs run .NET 6.0 and later.
+
 ---
 
 ## 🔍 Code Quality & Static Analysis

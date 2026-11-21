@@ -1,0 +1,192 @@
+{
+  "id": "red",
+  "displayName": "Red",
+  "color": "#e53935",
+  "weapons": [
+    {
+      "id": "ussr-small-arms",
+      "displayName": "AK + PKM Small Arms",
+      "minRange": 1,
+      "maxRange": 1,
+      "accuracy": 70,
+      "damageByArmor": { "infantry": 8, "lightArmor": 2 },
+      "ammoCapacity": 30
+    },
+    {
+      "id": "ussr-t90-125mm",
+      "displayName": "2A46M 125mm Smoothbore",
+      "minRange": 1,
+      "maxRange": 3,
+      "accuracy": 58,
+      "damageByArmor": { "infantry": 4, "lightArmor": 13, "heavyArmor": 15 },
+      "ammoCapacity": 40
+    },
+    {
+      "id": "ussr-t90-coax",
+      "displayName": "Coaxial 7.62mm PKT",
+      "minRange": 1,
+      "maxRange": 1,
+      "accuracy": 75,
+      "damageByArmor": { "infantry": 7, "lightArmor": 1 },
+      "ammoCapacity": 200
+    },
+    {
+      "id": "ussr-2s19-152mm",
+      "displayName": "2S19 Msta-S 152mm",
+      "minRange": 3,
+      "maxRange": 6,
+      "accuracy": 55,
+      "damageByArmor": { "infantry": 9, "lightArmor": 8, "heavyArmor": 4 },
+      "ammoCapacity": 50
+    },
+    {
+      "id": "ussr-kpvt-145",
+      "displayName": "14.5mm KPVT HMG",
+      "minRange": 1,
+      "maxRange": 2,
+      "accuracy": 70,
+      "damageByArmor": { "infantry": 7, "lightArmor": 5 },
+      "ammoCapacity": 100
+    },
+    {
+      "id": "ussr-ataka",
+      "displayName": "9M120 Ataka ATGM",
+      "minRange": 1,
+      "maxRange": 3,
+      "accuracy": 78,
+      "damageByArmor": { "infantry": 5, "lightArmor": 11, "heavyArmor": 13 },
+      "ammoCapacity": 8
+    },
+    {
+      "id": "ussr-mi28-30mm",
+      "displayName": "Shipunov 2A42 30mm",
+      "minRange": 1,
+      "maxRange": 2,
+      "accuracy": 75,
+      "damageByArmor": { "infantry": 9, "lightArmor": 5 },
+      "ammoCapacity": 250
+    },
+    {
+      "id": "ussr-r77",
+      "displayName": "R-77 (AA-12 Adder)",
+      "minRange": 2,
+      "maxRange": 6,
+      "accuracy": 72,
+      "damageByArmor": { "aircraft": 16 },
+      "ammoCapacity": 4
+    },
+    {
+      "id": "ussr-gsh301",
+      "displayName": "GSh-30-1 30mm Cannon",
+      "minRange": 1,
+      "maxRange": 2,
+      "accuracy": 78,
+      "damageByArmor": { "aircraft": 12 },
+      "ammoCapacity": 150
+    }
+  ],
+  "units": [
+    {
+      "id": "ussr-infantry",
+      "displayName": "Motorized Rifles",
+      "archetype": "infantry",
+      "maxHp": 10,
+      "fuelCapacity": 0,
+      "sightRange": 2,
+      "movementPoints": 3,
+      "armorClass": "infantry",
+      "armor": 1,
+      "dexterity": 3,
+      "luck": 1,
+      "canCapture": true,
+      "canFly": false,
+      "weaponSystemIds": ["ussr-small-arms"],
+      "terrainMovementCosts": { "plain": 1, "hills": 2, "forest": 2, "urban": 1, "mountain": 3 }
+    },
+    {
+      "id": "ussr-t90m",
+      "displayName": "T-90M Proryv",
+      "archetype": "tank",
+      "maxHp": 20,
+      "fuelCapacity": 10,
+      "sightRange": 2,
+      "movementPoints": 4,
+      "armorClass": "heavyArmor",
+      "armor": 5,
+      "dexterity": 1,
+      "luck": 1,
+      "canCapture": false,
+      "canFly": false,
+      "weaponSystemIds": ["ussr-t90-125mm", "ussr-t90-coax"],
+      "terrainMovementCosts": { "plain": 1, "hills": 2, "forest": 3, "urban": 2 }
+    },
+    {
+      "id": "ussr-2s19-msta",
+      "displayName": "2S19 Msta-S",
+      "archetype": "artillery",
+      "maxHp": 12,
+      "fuelCapacity": 8,
+      "sightRange": 2,
+      "movementPoints": 3,
+      "armorClass": "lightArmor",
+      "armor": 2,
+      "dexterity": 1,
+      "luck": 1,
+      "canCapture": false,
+      "canFly": false,
+      "weaponSystemIds": ["ussr-2s19-152mm"],
+      "terrainMovementCosts": { "plain": 1, "hills": 2, "forest": 3, "urban": 2 }
+    },
+    {
+      "id": "ussr-brdm2",
+      "displayName": "BRDM-2",
+      "archetype": "recon",
+      "maxHp": 9,
+      "fuelCapacity": 12,
+      "sightRange": 4,
+      "movementPoints": 6,
+      "armorClass": "lightArmor",
+      "armor": 2,
+      "dexterity": 4,
+      "luck": 1,
+      "canCapture": false,
+      "canFly": false,
+      "weaponSystemIds": ["ussr-kpvt-145"],
+      "terrainMovementCosts": { "plain": 1, "hills": 2, "forest": 3, "urban": 1 }
+    },
+    {
+      "id": "ussr-mi28-havoc",
+      "displayName": "Mi-28 Havoc",
+      "archetype": "helicopter",
+      "maxHp": 14,
+      "fuelCapacity": 10,
+      "sightRange": 5,
+      "movementPoints": 8,
+      "armorClass": "aircraft",
+      "armor": 2,
+      "dexterity": 4,
+      "luck": 1,
+      "canCapture": false,
+      "canFly": true,
+      "weaponSystemIds": ["ussr-ataka", "ussr-mi28-30mm"],
+      "terrainMovementCosts": { "plain": 1, "hills": 1, "forest": 1, "urban": 1, "mountain": 1, "water": 1 }
+    },
+    {
+      "id": "ussr-su35",
+      "displayName": "Su-35S Flanker-E",
+      "archetype": "fighter",
+      "maxHp": 12,
+      "fuelCapacity": 8,
+      "sightRange": 6,
+      "movementPoints": 12,
+      "armorClass": "aircraft",
+      "armor": 1,
+      "dexterity": 5,
+      "luck": 2,
+      "canCapture": false,
+      "canFly": true,
+      "weaponSystemIds": ["ussr-r77", "ussr-gsh301"],
+      "terrainMovementCosts": { "plain": 1, "hills": 1, "forest": 1, "urban": 1, "mountain": 1, "water": 1 }
+    }
+  ]
+}

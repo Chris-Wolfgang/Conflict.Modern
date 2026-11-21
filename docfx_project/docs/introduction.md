@@ -1,6 +1,6 @@
 # Introduction
 
-Welcome to Wolfgang.Conflict!
+Welcome to Wolfgang.Conflict.Modern!
 
 ## Overview
 
@@ -18,9 +18,9 @@ A turn based modern warfare game
 
 ## Getting Help
 
-If you need help with Wolfgang.Conflict, please:
+If you need help with Wolfgang.Conflict.Modern, please:
 
 - Check the [Getting Started](getting-started.md) guide
 - Review the [API Reference](../api/index.md)
-- Visit the [GitHub repository](https://github.com/Chris-Wolfgang/Conflict)
-- Open an issue on [GitHub Issues](https://github.com/Chris-Wolfgang/Conflict/issues)
+- Visit the [GitHub repository](https://github.com/Chris-Wolfgang/Conflict.Modern)
+- Open an issue on [GitHub Issues](https://github.com/Chris-Wolfgang/Conflict.Modern/issues)

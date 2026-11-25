@@ -1,0 +1,192 @@
+{
+  "id": "blue",
+  "displayName": "Blue",
+  "color": "#1e88e5",
+  "weapons": [
+    {
+      "id": "us-small-arms",
+      "displayName": "M4 + M249 Small Arms",
+      "minRange": 1,
+      "maxRange": 1,
+      "accuracy": 70,
+      "damageByArmor": { "infantry": 8, "lightArmor": 2 },
+      "ammoCapacity": 30
+    },
+    {
+      "id": "us-m1a2-120mm",
+      "displayName": "M256 120mm Smoothbore",
+      "minRange": 1,
+      "maxRange": 3,
+      "accuracy": 60,
+      "damageByArmor": { "infantry": 4, "lightArmor": 14, "heavyArmor": 16 },
+      "ammoCapacity": 40
+    },
+    {
+      "id": "us-m1a2-coax",
+      "displayName": "Coaxial 7.62mm",
+      "minRange": 1,
+      "maxRange": 1,
+      "accuracy": 75,
+      "damageByArmor": { "infantry": 7, "lightArmor": 1 },
+      "ammoCapacity": 200
+    },
+    {
+      "id": "us-m109-155mm",
+      "displayName": "M109A6 Paladin 155mm",
+      "minRange": 3,
+      "maxRange": 6,
+      "accuracy": 55,
+      "damageByArmor": { "infantry": 9, "lightArmor": 8, "heavyArmor": 4 },
+      "ammoCapacity": 36
+    },
+    {
+      "id": "us-m2-50cal",
+      "displayName": "M2 .50cal HMG",
+      "minRange": 1,
+      "maxRange": 2,
+      "accuracy": 70,
+      "damageByArmor": { "infantry": 7, "lightArmor": 4 },
+      "ammoCapacity": 100
+    },
+    {
+      "id": "us-hellfire",
+      "displayName": "AGM-114 Hellfire",
+      "minRange": 1,
+      "maxRange": 3,
+      "accuracy": 80,
+      "damageByArmor": { "infantry": 5, "lightArmor": 12, "heavyArmor": 14 },
+      "ammoCapacity": 8
+    },
+    {
+      "id": "us-apache-30mm",
+      "displayName": "M230 30mm Chaingun",
+      "minRange": 1,
+      "maxRange": 2,
+      "accuracy": 75,
+      "damageByArmor": { "infantry": 9, "lightArmor": 5 },
+      "ammoCapacity": 1200
+    },
+    {
+      "id": "us-aim120",
+      "displayName": "AIM-120 AMRAAM",
+      "minRange": 2,
+      "maxRange": 6,
+      "accuracy": 75,
+      "damageByArmor": { "aircraft": 16 },
+      "ammoCapacity": 4
+    },
+    {
+      "id": "us-aim9",
+      "displayName": "AIM-9 Sidewinder",
+      "minRange": 1,
+      "maxRange": 2,
+      "accuracy": 80,
+      "damageByArmor": { "aircraft": 12 },
+      "ammoCapacity": 2
+    }
+  ],
+  "units": [
+    {
+      "id": "us-infantry",
+      "displayName": "US Infantry Squad",
+      "archetype": "infantry",
+      "maxHp": 10,
+      "fuelCapacity": 0,
+      "sightRange": 2,
+      "movementPoints": 3,
+      "armorClass": "infantry",
+      "armor": 1,
+      "dexterity": 3,
+      "luck": 1,
+      "canCapture": true,
+      "canFly": false,
+      "weaponSystemIds": ["us-small-arms"],
+      "terrainMovementCosts": { "plain": 1, "hills": 2, "forest": 2, "urban": 1, "mountain": 3 }
+    },
+    {
+      "id": "us-m1a2-abrams",
+      "displayName": "M1A2 Abrams",
+      "archetype": "tank",
+      "maxHp": 22,
+      "fuelCapacity": 10,
+      "sightRange": 2,
+      "movementPoints": 4,
+      "armorClass": "heavyArmor",
+      "armor": 6,
+      "dexterity": 1,
+      "luck": 1,
+      "canCapture": false,
+      "canFly": false,
+      "weaponSystemIds": ["us-m1a2-120mm", "us-m1a2-coax"],
+      "terrainMovementCosts": { "plain": 1, "hills": 2, "forest": 3, "urban": 2 }
+    },
+    {
+      "id": "us-m109-paladin",
+      "displayName": "M109A6 Paladin",
+      "archetype": "artillery",
+      "maxHp": 12,
+      "fuelCapacity": 8,
+      "sightRange": 2,
+      "movementPoints": 3,
+      "armorClass": "lightArmor",
+      "armor": 2,
+      "dexterity": 1,
+      "luck": 1,
+      "canCapture": false,
+      "canFly": false,
+      "weaponSystemIds": ["us-m109-155mm"],
+      "terrainMovementCosts": { "plain": 1, "hills": 2, "forest": 3, "urban": 2 }
+    },
+    {
+      "id": "us-stryker",
+      "displayName": "M1126 Stryker",
+      "archetype": "recon",
+      "maxHp": 10,
+      "fuelCapacity": 12,
+      "sightRange": 4,
+      "movementPoints": 6,
+      "armorClass": "lightArmor",
+      "armor": 2,
+      "dexterity": 4,
+      "luck": 1,
+      "canCapture": false,
+      "canFly": false,
+      "weaponSystemIds": ["us-m2-50cal"],
+      "terrainMovementCosts": { "plain": 1, "hills": 2, "forest": 3, "urban": 1 }
+    },
+    {
+      "id": "us-ah64-apache",
+      "displayName": "AH-64 Apache",
+      "archetype": "helicopter",
+      "maxHp": 14,
+      "fuelCapacity": 10,
+      "sightRange": 5,
+      "movementPoints": 8,
+      "armorClass": "aircraft",
+      "armor": 2,
+      "dexterity": 4,
+      "luck": 1,
+      "canCapture": false,
+      "canFly": true,
+      "weaponSystemIds": ["us-hellfire", "us-apache-30mm"],
+      "terrainMovementCosts": { "plain": 1, "hills": 1, "forest": 1, "urban": 1, "mountain": 1, "water": 1 }
+    },
+    {
+      "id": "us-f22-raptor",
+      "displayName": "F-22 Raptor",
+      "archetype": "fighter",
+      "maxHp": 12,
+      "fuelCapacity": 8,
+      "sightRange": 6,
+      "movementPoints": 12,
+      "armorClass": "aircraft",
+      "armor": 1,
+      "dexterity": 5,
+      "luck": 2,
+      "canCapture": false,
+      "canFly": true,
+      "weaponSystemIds": ["us-aim120", "us-aim9"],
+      "terrainMovementCosts": { "plain": 1, "hills": 1, "forest": 1, "urban": 1, "mountain": 1, "water": 1 }
+    }
+  ]
+}
